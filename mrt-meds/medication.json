@@ -1,0 +1,29 @@
+// formulary_seed.ts
+// Seed dataset for MRT Meds Tracker prototype
+
+export const formulary = [
+  { name: "Adrenaline", form: "Injection (IM)", dose: "1:1000, 0.5–1 mg IM", use: "anaphylaxis" },
+  { name: "Aspirin", form: "Tablet (PO, chewable)", dose: "300 mg PO", use: "suspected MI/ACS" },
+  { name: "Co-amoxiclav", form: "Tablet / IV", dose: "625 mg PO or 1.2 g IV", use: "infection" },
+  { name: "Diamorphine", form: "Powder for reconstitution (IN)", dose: "5–10 mg IN", use: "pain" },
+  { name: "Entonox® / Nitronox®", form: "Inhaled gas (50% O₂ / 50% N₂O)", dose: "Self-administered inhalation", use: "pain" },
+  { name: "Fentanyl", form: "Buccal lozenge", dose: "200–400 mcg buccal", use: "pain" },
+  { name: "Glucose Gel", form: "Oral gel", dose: "10–20 g PO", use: "hypoglycaemia" },
+  { name: "Glyceryl Trinitrate (GTN)", form: "Spray (sublingual)", dose: "400 mcg SL spray", use: "angina/MI" },
+  { name: "Ibuprofen", form: "Tablet (PO)", dose: "400 mg PO", use: "pain/inflammation" },
+  { name: "Ipratropium Bromide", form: "Nebuliser solution", dose: "500 mcg neb", use: "bronchospasm" },
+  { name: "Methoxyflurane / Penthrox®", form: "Inhaler (self-administered)", dose: "3 mL via inhaler", use: "trauma pain" },
+  { name: "Midazolam", form: "Liquid solution (IN/buccal)", dose: "5–10 mg IN/buccal", use: "seizures" },
+  { name: "Morphine (IM)", form: "Injection (IM)", dose: "10 mg IM", use: "pain" },
+  { name: "Morphine (IV)", form: "Injection (IV)", dose: "2.5–5 mg IV titrated", use: "pain" },
+  { name: "Naloxone", form: "Injection (IM/IN)", dose: "400 mcg IM or 800 mcg IN", use: "overdose reversal" },
+  { name: "Ondansetron", form: "Injection (IV/IM)", dose: "4 mg IV/IM", use: "antiemetic" },
+  { name: "Oxygen", form: "Gas (inhalation)", dose: "15 L/min NRB mask", use: "hypoxia" },
+  { name: "Paracetamol", form: "Tablet (PO)", dose: "1 g PO", use: "pain/fever" },
+  { name: "Prochlorperazine", form: "Buccal tablet / injection", dose: "3–12.5 mg buccal/IM", use: "nausea/vertigo" },
+  { name: "Salbutamol", form: "Inhaler / Nebuliser", dose: "100 mcg per puff or 2.5 mg neb", use: "bronchospasm" },
+  { name: "Tranexamic Acid", form: "Injection (IV)", dose: "1 g IV", use: "trauma/bleeding" },
+  { name: "Viagra", form: "Tablet", dose: "1 g", use: "Date Night" },
+
+  ];
+
