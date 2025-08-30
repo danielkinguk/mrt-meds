@@ -77,7 +77,6 @@ npm run preview
 
 ### 📋 Planned Features
 - PDF report generation
-- QR code integration
 - Multi-device synchronization
 - Advanced analytics
 - Backup/restore functionality

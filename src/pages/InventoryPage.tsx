@@ -80,6 +80,21 @@ export function InventoryPage() {
       if ('id' in medicineData) {
         // Update existing medicine
         await db.medicines.update(medicineData.id, medicineData);
+        
+        // If expiration date was provided, update all batches for this medicine
+        if (medicineData.expirationDate) {
+          const batches = await db.batches.where('medicineId').equals(medicineData.id).toArray();
+          const newExpiryDate = new Date(medicineData.expirationDate);
+          
+          // Update each batch with the new expiration date
+          await Promise.all(
+            batches.map(batch => 
+              db.batches.update(batch.id, { expiryDate: newExpiryDate })
+            )
+          );
+          
+          console.log(`Updated ${batches.length} batch(es) with new expiration date`);
+        }
       } else {
         // Add new medicine
         const newId = `med-${Date.now()}`;
@@ -131,8 +146,14 @@ export function InventoryPage() {
   };
 
   const getOverallStatus = (medicine: MedicineWithStock) => {
-    // First check if any items are expired
-    if (medicine.nearestExpiry && new Date(medicine.nearestExpiry) < new Date()) {
+    const now = new Date();
+    
+    // Check both batch expiry and medicine's own expiration date
+    const batchExpired = medicine.nearestExpiry && new Date(medicine.nearestExpiry) < now;
+    const medicineExpired = medicine.expirationDate && new Date(medicine.expirationDate) < now;
+    
+    // If either the batch or the medicine itself is expired
+    if (batchExpired || medicineExpired) {
       return 'Expired';
     }
     

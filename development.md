@@ -15,31 +15,29 @@
 | Quick Actions | ✅ Complete | P1 | 1 | Action buttons implemented |
 | **Inventory Management** | | | | |
 | Medicine List View | ✅ Complete | P0 | 2 | Sortable, filterable table |
-| Add/Edit Medicine | ⬜ Not Started | P0 | 2 | Form with validation |
-| Batch Tracking | ⬜ Not Started | P0 | 2 | Lot numbers, expiry dates |
-| Stock Levels | ⬜ Not Started | P0 | 2 | Min/max thresholds |
+| Add/Edit Medicine | ✅ Complete | P0 | 2 | Form with validation |
+| Batch Tracking | ✅ Complete | P0 | 2 | Lot numbers, expiry dates |
+| Stock Levels | ✅ Complete | P0 | 2 | Min/max thresholds |
 | **Kit Organization** | | | | |
 | Location Hierarchy | ✅ Complete | P0 | 2 | Base → Vehicle → Kit → Pouch |
 | Kit View Tree | ✅ Complete | P1 | 2 | Expandable navigation with items display |
 | Item Assignment | ⬜ Not Started | P1 | 2 | Drag-drop or form-based |
 | Kit Checklist | ⬜ Not Started | P1 | 3 | Printable check sheets |
 | **Stock Operations** | | | | |
-| Receive Stock Form | 🟦 In Progress | P0 | 2 | UI complete, needs backend integration |
+| Receive Stock Form | ✅ Complete | P0 | 2 | UI and backend fully integrated |
 | Stock Movement | ⬜ Not Started | P1 | 3 | Transfer between locations |
 | Disposal/Write-off | ⬜ Not Started | P2 | 3 | Expired, damaged, lost |
 | **Expiry Management** | | | | |
 | Color Coding | ✅ Complete | P0 | 1 | Implemented in dashboard tiles |
 | Expiry Alerts | ✅ Complete | P0 | 1 | Dashboard alert section |
-| Expiry Report | ⬜ Not Started | P1 | 2 | Filterable by date range |
+| Expiry Report | ✅ Complete | P1 | 2 | Filterable by date range |
 | **Reports & Export** | | | | |
-| CSV Export | ⬜ Not Started | P1 | 2 | Inventory, expiries, usage |
+| CSV Export | ✅ Complete | P1 | 2 | Inventory, expiries, usage |
 | PDF Reports | ⬜ Not Started | P2 | 3 | Formatted for printing |
 | Usage Analytics | ⬜ Not Started | P2 | 3 | Consumption patterns |
 | CD Register | ⬜ Not Started | P1 | 3 | Controlled drug audit trail |
-| **Additional Features** | | | | |
-| QR Code Generation | ⬜ Not Started | P2 | 4 | For pack identification |
-| QR Code Scanning | ⬜ Not Started | P2 | 4 | Quick stock operations |
-| Search & Filter | ⬜ Not Started | P1 | 2 | Global and per-view |
+| **Planned Features** | | | | |
+| Search & Filter | ✅ Complete | P1 | 2 | Global and per-view |
 | Mock Data Seed | ✅ Complete | P0 | 1 | Full MREW formulary seeded |
 | Backup/Restore | ⬜ Not Started | P1 | 3 | JSON export/import |
 | Multi-device Sync | ⬜ Not Started | P3 | 5 | Future enhancement |
@@ -86,20 +84,23 @@
 ### Sprint 2 Goals
 1. ✅ Implement React Router for navigation
 2. ✅ Build Inventory Management page
-3. 🟦 Create Receive Stock form (UI complete)
+3. ✅ Create Receive Stock form (Fully implemented)
 4. ✅ Implement Kit Organization view
-5. 🟦 Add search and filtering (partial)
+5. ✅ Add search and filtering (Complete)
 
 ### Sprint 2 Progress
 - [x] Set up React Router with navigation menu
 - [x] Create Inventory list with sortable table
-- [ ] Build Add/Edit Medicine forms
-- [x] Implement Receive Stock workflow (UI)
+- [x] Build Add/Edit Medicine forms with validation
+- [x] Implement Receive Stock workflow (Full backend integration)
 - [x] Create Kit hierarchy view
-- [ ] Add global search functionality
-- [x] Added Reports page
+- [x] Add global search functionality
+- [x] Added Reports page with Expiry Report
 - [x] Created Stock Operations page
 - [x] Fixed all TypeScript errors
+- [x] Implemented CSV export for inventory
+- [x] Added batch tracking with lot numbers
+- [x] Implemented min/max stock thresholds
 
 ## 🛠️ Technical Stack
 
