@@ -1,4 +1,4 @@
-import { db } from './database';
+import { getDatabaseConnection } from './connectionManager';
 import type { Medicine, Batch, Item, Location, MedicineForm, MedicineRoute, MedicineCategory } from '../../types';
 
 // MRT Drugs and Medical Equipment Formulary - EXACT 38 ITEMS ONLY
@@ -183,6 +183,9 @@ export async function seedDatabase() {
   try {
     console.log('Starting database seed...');
     
+    // Get database connection
+    const db = await getDatabaseConnection();
+    
     // Clear existing data (optional - comment out if you want to preserve existing data)
     await db.transaction('rw', db.medicines, db.batches, db.items, db.locations, async () => {
       await db.medicines.clear();
@@ -190,8 +193,8 @@ export async function seedDatabase() {
       await db.items.clear();
     });
     
-    // Create additional locations for kits and vehicles
-    const locations: Location[] = [
+    // Create additional locations for kits and vehicles (only if they don't exist)
+    const additionalLocations: Location[] = [
       { id: 'dm-1', name: 'DM 1', type: 'vehicle', parentId: 'base-1', description: 'Deputy Manager 1', isActive: true, sortOrder: 4 },
       { id: 'dm-2', name: 'DM 2', type: 'vehicle', parentId: 'base-1', description: 'Deputy Manager 2', isActive: true, sortOrder: 5 },
       { id: 'vehicle-1', name: 'DM 1 Red Bag', type: 'vehicle', parentId: 'dm-1', description: 'Deputy Manager 1 red bag', isActive: true, sortOrder: 12 },
@@ -204,7 +207,15 @@ export async function seedDatabase() {
       { id: 'pouch-2', name: 'Airway Pouch', type: 'pouch', parentId: 'kit-1', description: 'Airway management', isActive: true, sortOrder: 31 },
     ];
     
-    await db.locations.bulkAdd(locations);
+    // Add locations one by one to avoid constraint errors
+    for (const location of additionalLocations) {
+      try {
+        await db.locations.add(location);
+      } catch (error) {
+        // Location already exists, skip it
+        console.log(`Location ${location.id} already exists, skipping...`);
+      }
+    }
     
     // Process formulary data
     const medicines: Medicine[] = [];
@@ -334,13 +345,13 @@ export async function seedDatabase() {
     console.log(`- ${medicines.length} medicines`);
     console.log(`- ${batches.length} batches`);
     console.log(`- ${items.length} items`);
-    console.log(`- ${locations.length} additional locations`);
+    console.log(`- ${additionalLocations.length} additional locations`);
     
     return {
       medicines: medicines.length,
       batches: batches.length,
       items: items.length,
-      locations: locations.length
+      locations: additionalLocations.length
     };
   } catch (error) {
     console.error('Failed to seed database:', error);
@@ -350,6 +361,7 @@ export async function seedDatabase() {
 
 export async function resetAndSeed() {
   try {
+    const db = await getDatabaseConnection();
     await db.clearAllData();
     await db.initializeDefaults();
     return await seedDatabase();

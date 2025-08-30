@@ -54,9 +54,10 @@ npm run preview
 - **Frontend**: React 18.3.1 + TypeScript 5.6.2
 - **Build Tool**: Vite 5.4.10
 - **Styling**: TailwindCSS 3.4.17
-- **Database**: IndexedDB (via Dexie.js 4.2.0)
+- **Database**: IndexedDB (via Dexie.js 4.2.0) with Connection Management
 - **Routing**: React Router DOM 6.30.1
 - **Icons**: Lucide React 0.542.0
+- **Concurrency**: Multi-session support with operation locking
 
 ## 📊 Current Status
 
@@ -69,40 +70,85 @@ npm run preview
 - Database with MREW formulary data
 - Responsive UI design
 - Search and filtering capabilities
+- **Multi-session connection management**
+- **Concurrent operation protection**
+- **Connection monitoring and status display**
+- **Session-based data isolation**
 
 ### 🟦 In Progress
 - Enhanced error handling for different environments
 - Debug tools for troubleshooting
 - Additional stock operation workflows
+- Advanced concurrency controls
+- Connection pooling optimization
 
 ### 📋 Planned Features
 - PDF report generation
 - Multi-device synchronization
 - Advanced analytics
 - Backup/restore functionality
+- Real-time collaboration features
+- Advanced session management
+- Cross-device session sharing
 
 ## 🗄️ Data Structure
 
 The application manages the following entities:
 
-- **Medicines**: 21 items from MREW formulary
+- **Medicines**: 38 items from MREW formulary
 - **Batches**: Lot tracking with expiry dates
 - **Items**: Individual units with location tracking
 - **Locations**: Hierarchical structure (Base → Vehicle → Kit → Pouch)
 - **Movements**: Stock transfer history
 - **Users**: Access control and audit trails
+- **Sessions**: Multi-user session management
+- **Connections**: Database connection pooling
+- **Operation Locks**: Concurrency control mechanisms
 
 ### Location Hierarchy
 ```
 Base (Duddon and Furness MRT)
 ├── Drug Safe
 ├── Store
-├── DM 1
+├── DM 1 (Deputy Manager 1)
 │   ├── DM 1 Red Bag
+│   │   └── Primary Response Kit
+│   │       ├── Drugs Pouch
+│   │       └── Airway Pouch
 │   └── DM 1 Blue Bag
-└── DM 2
+│       └── Backup Kit
+└── DM 2 (Deputy Manager 2)
     ├── DM 2 Red Bag
     └── DM 2 Blue Bag
+```
+
+## 🔗 Connection Management
+
+The application now supports multiple concurrent connections with the following features:
+
+### Multi-Session Support
+- **Session Isolation**: Each browser tab/window gets a unique session ID
+- **Connection Pooling**: Up to 10 concurrent database connections
+- **Automatic Cleanup**: Expired connections are automatically cleaned up
+- **Session Persistence**: Sessions persist across page reloads
+
+### Concurrency Protection
+- **Operation Locking**: Critical operations (seeding, bulk updates) are protected
+- **Race Condition Prevention**: Shared initialization prevents duplicate operations
+- **Graceful Degradation**: App continues working even if some operations fail
+- **Connection Monitoring**: Real-time connection status and lock monitoring
+
+### Usage Examples
+```typescript
+// Get database connection (automatically managed)
+const db = await getDatabaseConnection();
+
+// Safe operations with concurrency protection
+await SafeDatabaseOperations.seedDatabase();
+await SafeDatabaseOperations.clearAllData();
+
+// Monitor connections
+const stats = ConnectionManager.getInstance().getConnectionStats();
 ```
 
 ## 🔧 Development
@@ -134,14 +180,21 @@ The application uses IndexedDB for local storage. To reset the database:
 
 ## 🐛 Debugging
 
-A debug panel is available in the application (red "Debug" button in bottom-right corner) that provides:
+Debug panels are available in the application:
 
+### Debug Panel (red "Debug" button in bottom-right corner)
 - Environment information
 - Database connection status
 - Browser capabilities
 - Storage availability
 
-This is particularly useful for troubleshooting issues in different environments like CodeSandbox.
+### Connection Status Panel (blue "Connections" button in bottom-left corner)
+- Active connection count
+- Session information
+- Operation lock status
+- Connection health monitoring
+
+These are particularly useful for troubleshooting issues in different environments like CodeSandbox and monitoring multi-session usage.
 
 ## 📝 Contributing
 
@@ -161,7 +214,8 @@ For support or questions, please contact the development team or create an issue
 
 ---
 
-**Version**: 0.1.17  
-**Last Updated**: 2025-08-30  
+**Version**: 0.2.0  
+**Last Updated**: 2025-01-27  
 **Status**: Active Development  
-**Team**: Duddon and Furness Mountain Rescue Team
+**Team**: Duddon and Furness Mountain Rescue Team  
+**New Features**: Multi-session support, concurrency protection, connection management

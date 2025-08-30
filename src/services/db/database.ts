@@ -22,8 +22,8 @@ export class MRTMedsDatabase extends Dexie {
   auditLogs!: Table<AuditLog>;
   settings!: Table<AppSettings & { id: string }>;
 
-  constructor() {
-    super('MRTMedsDB');
+  constructor(dbName?: string) {
+    super(dbName || 'MRTMedsDB');
     
     this.version(1).stores({
       medicines: '++id, name, category, isControlled',
@@ -39,65 +39,85 @@ export class MRTMedsDatabase extends Dexie {
   }
 
   async initializeDefaults() {
-    const settingsCount = await this.settings.count();
-    
-    if (settingsCount === 0) {
-      await this.settings.add({
-        id: 'default',
-        expiryWarningDays: 60,
-        expiryCriticalDays: 30,
-        lowStockPercentage: 30,
-        criticalStockPercentage: 10,
-        kitCheckIntervalDays: 30,
-        temperatureUnit: 'celsius',
-        dateFormat: 'DD/MM/YYYY',
-        timeFormat: '24h'
-      });
-    }
+    try {
+      const settingsCount = await this.settings.count();
+      
+      if (settingsCount === 0) {
+        await this.settings.add({
+          id: 'default',
+          expiryWarningDays: 60,
+          expiryCriticalDays: 30,
+          lowStockPercentage: 30,
+          criticalStockPercentage: 10,
+          kitCheckIntervalDays: 30,
+          temperatureUnit: 'celsius',
+          dateFormat: 'DD/MM/YYYY',
+          timeFormat: '24h'
+        });
+      }
 
-    const locationsCount = await this.locations.count();
-    
-    if (locationsCount === 0) {
-      await this.locations.bulkAdd([
-        {
-          id: 'base-1',
-          name: 'Base',
-          type: 'base',
-          description: 'Duddon and Furness Mountain Rescue Team, Foxfield, Cumbria',
-          isActive: true,
-          sortOrder: 1
-        },
-        {
-          id: 'cabinet-1',
-          name: 'Drug Safe',
-          type: 'cabinet',
-          parentId: 'base-1',
-          description: 'Secure drug storage',
-          isActive: true,
-          sortOrder: 2
-        },
-        {
-          id: 'store-1',
-          name: 'Store',
-          type: 'storage',
-          parentId: 'base-1',
-          description: 'New drugs and spare stock not yet assigned to DM bags',
-          isActive: true,
-          sortOrder: 3
+      const locationsCount = await this.locations.count();
+      
+      if (locationsCount === 0) {
+        // Add default locations one by one to avoid constraint errors
+        const defaultLocations = [
+          {
+            id: 'base-1',
+            name: 'Base',
+            type: 'base' as const,
+            description: 'Duddon and Furness Mountain Rescue Team, Foxfield, Cumbria',
+            isActive: true,
+            sortOrder: 1
+          },
+          {
+            id: 'cabinet-1',
+            name: 'Drug Safe',
+            type: 'cabinet' as const,
+            parentId: 'base-1',
+            description: 'Secure drug storage',
+            isActive: true,
+            sortOrder: 2
+          },
+          {
+            id: 'store-1',
+            name: 'Store',
+            type: 'storage' as const,
+            parentId: 'base-1',
+            description: 'New drugs and spare stock not yet assigned to DM bags',
+            isActive: true,
+            sortOrder: 3
+          }
+        ];
+
+        for (const location of defaultLocations) {
+          try {
+            await this.locations.add(location);
+          } catch (error) {
+            // Location might already exist, continue
+            console.log(`Default location ${location.id} already exists`);
+          }
         }
-      ]);
-    }
+      }
 
-    const usersCount = await this.users.count();
-    
-    if (usersCount === 0) {
-      await this.users.add({
-        id: 'user-1',
-        name: 'System Admin',
-        role: 'admin',
-        email: 'admin@mrt.local',
-        isActive: true
-      });
+      const usersCount = await this.users.count();
+      
+      if (usersCount === 0) {
+        try {
+          await this.users.add({
+            id: 'user-1',
+            name: 'System Admin',
+            role: 'admin',
+            email: 'admin@mrt.local',
+            isActive: true
+          });
+        } catch (error) {
+          // User might already exist, continue
+          console.log('Default user already exists');
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing database defaults:', error);
+      // Don't throw - let the application continue with partial initialization
     }
   }
 
@@ -108,6 +128,7 @@ export class MRTMedsDatabase extends Dexie {
   }
 }
 
+// Legacy singleton for backward compatibility (deprecated)
 export const db = new MRTMedsDatabase();
 
 // Add localStorage fallback for environments where IndexedDB fails
@@ -150,6 +171,7 @@ export class LocalStorageFallback {
   }
 }
 
+// Legacy initialization function (deprecated - use ConnectionManager instead)
 export async function initializeDatabase() {
   try {
     console.log('Attempting to initialize database...');

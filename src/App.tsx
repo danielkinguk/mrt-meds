@@ -6,10 +6,11 @@ import { StockOperationsPage } from './pages/StockOperationsPage';
 import { KitsPage } from './pages/KitsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { Navigation } from './components/layout/Navigation';
-import { initializeDatabase, db } from './services/db/database';
+import { getDatabaseConnection } from './services/db/connectionManager';
 import { seedDatabase } from './services/db/seedData';
 import { Database } from 'lucide-react';
 import { DebugInfo } from './components/DebugInfo';
+import { ConnectionStatus } from './components/ConnectionStatus';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
@@ -30,8 +31,8 @@ function App() {
 
       console.log('Starting app initialization...');
       
-      // Initialize database
-      await initializeDatabase();
+      // Get database connection using connection manager
+      const db = await getDatabaseConnection();
       
       // Check if we have data
       const medicineCount = await db.medicines.count();
@@ -40,11 +41,16 @@ function App() {
       // If no medicines, seed the database
       if (medicineCount === 0) {
         console.log('No medicines found, seeding database...');
-        await seedDatabase();
-        
-        // Verify seeding worked
-        const newCount = await db.medicines.count();
-        console.log(`After seeding: ${newCount} medicines found`);
+        try {
+          await seedDatabase();
+          
+          // Verify seeding worked
+          const newCount = await db.medicines.count();
+          console.log(`After seeding: ${newCount} medicines found`);
+        } catch (seedError) {
+          console.error('Seeding failed, but continuing with existing data:', seedError);
+          // Continue with whatever data exists rather than failing completely
+        }
       }
       
       setIsInitialized(true);
@@ -76,6 +82,9 @@ function App() {
     try {
       setIsLoading(true);
       setError(null);
+      
+      // Get database connection
+      const db = await getDatabaseConnection();
       
       // Clear and reseed
       await db.clearAllData();
@@ -142,6 +151,7 @@ function App() {
             </main>
             
             <DebugInfo />
+        <ConnectionStatus />
           </div>
         </Router>
       </ToastProvider>
