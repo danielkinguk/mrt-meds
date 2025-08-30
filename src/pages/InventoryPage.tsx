@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, Download, Edit, ChevronUp, ChevronDown } from 'lucide-react';
+import { Package, Plus, Search, Filter, Download, Edit, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Medicine } from '../types';
 import { db } from '../services/db/database';
 import { MedicineForm } from '../components/forms/MedicineForm';
+import { useToast } from '../contexts/ToastContext';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 
 interface MedicineWithStock extends Medicine {
   currentStock?: number;
@@ -26,6 +28,8 @@ export function InventoryPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<string>('all');
+  const [deletingMedicine, setDeletingMedicine] = useState<Medicine | null>(null);
+  const { showSuccess, showError, showInfo } = useToast();
 
   useEffect(() => {
     loadMedicines();
@@ -59,7 +63,8 @@ export function InventoryPage() {
       
       setMedicines(medsWithStock);
     } catch (error) {
-      console.error('Failed to load medicines:', error);
+      logError(error, 'loadMedicines');
+      showError('Failed to load medicines', getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -93,12 +98,14 @@ export function InventoryPage() {
             )
           );
           
-          console.log(`Updated ${batches.length} batch(es) with new expiration date`);
+          showInfo(`Updated ${batches.length} batch(es) with new expiration date`);
         }
+        showSuccess('Medicine updated successfully', `${medicineData.name} has been updated`);
       } else {
         // Add new medicine
         const newId = `med-${Date.now()}`;
         await db.medicines.add({ ...medicineData, id: newId });
+        showSuccess('Medicine added successfully', `${medicineData.name} has been added to inventory`);
       }
       
       // Reload medicines to show changes
@@ -106,8 +113,8 @@ export function InventoryPage() {
       setShowMedicineForm(false);
       setEditingMedicine(undefined);
     } catch (error) {
-      console.error('Failed to save medicine:', error);
-      // Error handling is done in the form component
+      logError(error, 'handleSaveMedicine');
+      showError('Failed to save medicine', getErrorMessage(error));
     }
   };
 
@@ -116,8 +123,58 @@ export function InventoryPage() {
     setEditingMedicine(undefined);
   };
 
+  const handleDeleteMedicine = (medicine: Medicine) => {
+    setDeletingMedicine(medicine);
+  };
+
+  const confirmDeleteMedicine = async () => {
+    if (!deletingMedicine) return;
+
+    try {
+      // Get all related data
+      const batches = await db.batches.where('medicineId').equals(deletingMedicine.id!).toArray();
+      const items = await db.items.where('medicineId').equals(deletingMedicine.id!).toArray();
+      const movements = await db.movements.where('medicineId').equals(deletingMedicine.id!).toArray();
+
+      // Delete in correct order: movements -> items -> batches -> medicine
+      if (movements.length > 0) {
+        await db.movements.where('medicineId').equals(deletingMedicine.id!).delete();
+      }
+      
+      if (items.length > 0) {
+        await db.items.where('medicineId').equals(deletingMedicine.id!).delete();
+      }
+      
+      if (batches.length > 0) {
+        await db.batches.where('medicineId').equals(deletingMedicine.id!).delete();
+      }
+      
+      // Finally delete the medicine
+      await db.medicines.delete(deletingMedicine.id!);
+
+      // Show success message with details
+      const deletedCount = batches.length + items.length;
+      showSuccess(
+        'Medicine deleted successfully', 
+        `${deletingMedicine.name} and ${deletedCount} related records removed`
+      );
+      
+      // Reload medicines to refresh the list
+      await loadMedicines();
+      setDeletingMedicine(null);
+    } catch (error) {
+      logError(error, 'confirmDeleteMedicine');
+      showError('Failed to delete medicine', getErrorMessage(error));
+    }
+  };
+
+  const cancelDeleteMedicine = () => {
+    setDeletingMedicine(null);
+  };
+
   const handleExportCSV = () => {
-    const csvContent = [
+    try {
+      const csvContent = [
       ['Name', 'Generic Name', 'Strength', 'Form', 'Category', 'Current Stock', 'Min Stock', 'Status', 'Nearest Expiry'],
       ...sortedAndFilteredMedicines.map(med => [
         med.name,
@@ -143,6 +200,11 @@ export function InventoryPage() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+    showSuccess('Export successful', 'Inventory data has been exported to CSV');
+    } catch (error) {
+      logError(error, 'handleExportCSV');
+      showError('Export failed', 'Failed to export inventory data');
+    }
   };
 
   const getOverallStatus = (medicine: MedicineWithStock) => {
@@ -444,13 +506,23 @@ export function InventoryPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button 
-                        onClick={() => handleEditMedicine(medicine)}
-                        className="text-primary-600 hover:text-primary-900 mr-3 flex items-center"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Edit
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          onClick={() => handleEditMedicine(medicine)}
+                          className="text-primary-600 hover:text-primary-900 flex items-center"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteMedicine(medicine)}
+                          className="text-red-600 hover:text-red-900 flex items-center"
+                          title="Delete medicine"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -473,6 +545,57 @@ export function InventoryPage() {
         onClose={handleCloseForm}
         onSave={handleSaveMedicine}
       />
+
+      {/* Delete Confirmation Dialog */}
+      {deletingMedicine && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Medicine</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-700 mb-2">
+                  Are you sure you want to delete <strong>{deletingMedicine.name}</strong>?
+                </p>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Warning:</strong> This will also delete all associated:
+                  </p>
+                  <ul className="text-sm text-yellow-700 mt-1 ml-4 list-disc">
+                    <li>Batch records and lot numbers</li>
+                    <li>Stock items and quantities</li>
+                    <li>Movement history and audit trail</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={cancelDeleteMedicine}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteMedicine}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Medicine
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

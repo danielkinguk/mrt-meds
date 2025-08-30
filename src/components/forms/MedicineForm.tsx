@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, AlertCircle } from 'lucide-react';
 import type { Medicine, MedicineForm as Form, MedicineRoute, MedicineCategory } from '../../types';
 import { db } from '../../services/db/database';
+import { useToast } from '../../contexts/ToastContext';
 
 interface MedicineFormProps {
   medicine?: Medicine;
@@ -57,6 +58,7 @@ export function MedicineForm({ medicine, isOpen, onClose, onSave }: MedicineForm
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const { showError } = useToast();
 
   useEffect(() => {
     if (medicine) {
@@ -97,6 +99,7 @@ export function MedicineForm({ medicine, isOpen, onClose, onSave }: MedicineForm
     e.preventDefault();
     
     if (!validateForm()) {
+      showError('Validation Error', 'Please fill in all required fields');
       return;
     }
 

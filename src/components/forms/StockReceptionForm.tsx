@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { X, Package, Plus, AlertCircle } from 'lucide-react';
 import type { Medicine, Batch } from '../../types';
 import { db } from '../../services/db/database';
+import { useToast } from '../../contexts/ToastContext';
+import { getErrorMessage, logError } from '../../utils/errorHandler';
 
 interface StockReceptionFormProps {
   isOpen: boolean;
@@ -34,6 +36,7 @@ export function StockReceptionForm({ isOpen, onClose, onSave }: StockReceptionFo
   const [batches, setBatches] = useState<BatchFormData[]>([initialBatchData]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -48,7 +51,8 @@ export function StockReceptionForm({ isOpen, onClose, onSave }: StockReceptionFo
       const meds = await db.medicines.orderBy('name').toArray();
       setMedicines(meds);
     } catch (error) {
-      console.error('Failed to load medicines:', error);
+      logError(error, 'loadMedicines');
+      showError('Failed to load medicines', getErrorMessage(error));
     }
   };
 
@@ -102,12 +106,14 @@ export function StockReceptionForm({ isOpen, onClose, onSave }: StockReceptionFo
     e.preventDefault();
     
     if (!validateForm()) {
+      showError('Validation Error', 'Please fill in all required fields');
       return;
     }
 
     setLoading(true);
     try {
       const receivedDate = new Date();
+      let successCount = 0;
       
       for (const batchData of batches) {
         const batchId = `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -138,13 +144,19 @@ export function StockReceptionForm({ isOpen, onClose, onSave }: StockReceptionFo
           quantity: batchData.quantity,
           notes: `Received from ${batchData.supplierName || batchData.manufacturer}`
         });
+        successCount++;
       }
 
+      showSuccess(
+        'Stock received successfully', 
+        `${successCount} batch${successCount > 1 ? 'es' : ''} added to inventory`
+      );
       onSave();
       onClose();
     } catch (error) {
-      console.error('Error receiving stock:', error);
-      setErrors({ submit: 'Failed to receive stock. Please try again.' });
+      logError(error, 'handleSubmit');
+      showError('Failed to receive stock', getErrorMessage(error));
+      setErrors({ submit: getErrorMessage(error) });
     } finally {
       setLoading(false);
     }

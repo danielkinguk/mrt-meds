@@ -10,6 +10,8 @@ import { initializeDatabase, db } from './services/db/database';
 import { seedDatabase } from './services/db/seedData';
 import { Database } from 'lucide-react';
 import { DebugInfo } from './components/DebugInfo';
+import { ToastProvider } from './contexts/ToastContext';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -123,23 +125,27 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation onReseed={handleReseed} />
-        
-        <main>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/inventory" element={<InventoryPage />} />
-            <Route path="/stock-operations" element={<StockOperationsPage />} />
-            <Route path="/kits" element={<KitsPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-          </Routes>
-        </main>
-        
-        <DebugInfo />
-      </div>
-    </Router>
+    <ErrorBoundary>
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Navigation onReseed={handleReseed} />
+            
+            <main>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/stock-operations" element={<StockOperationsPage />} />
+                <Route path="/kits" element={<KitsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+              </Routes>
+            </main>
+            
+            <DebugInfo />
+          </div>
+        </Router>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 

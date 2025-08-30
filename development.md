@@ -1,4 +1,4 @@
-# MRT Meds Tracker - Development Progress
+# DFMRT Medicine Tracker - Development Progress
 
 ## 📊 Feature Matrix
 
@@ -39,7 +39,7 @@
 | **Planned Features** | | | | |
 | Search & Filter | ✅ Complete | P1 | 2 | Global and per-view |
 | Mock Data Seed | ✅ Complete | P0 | 1 | Full MREW formulary seeded |
-| Backup/Restore | ⬜ Not Started | P1 | 3 | JSON export/import |
+| Backup/Restore | ✅ Complete | P1 | 3 | JSON export/import with critical data focus |
 | Multi-device Sync | ⬜ Not Started | P3 | 5 | Future enhancement |
 
 ### Status Legend
@@ -79,16 +79,20 @@
 - ✅ Implement stock level monitoring
 - ✅ Add database reset functionality
 
-## 🚀 Current Sprint: Sprint 2 (Core Features) - IN PROGRESS
+## ✅ Completed Sprint: Sprint 2 (Core Features) - COMPLETE
 
-### Sprint 2 Goals
-1. ✅ Implement React Router for navigation
-2. ✅ Build Inventory Management page
-3. ✅ Create Receive Stock form (Fully implemented)
-4. ✅ Implement Kit Organization view
-5. ✅ Add search and filtering (Complete)
+### Sprint 2 Accomplishments
+1. ✅ Implemented React Router for navigation
+2. ✅ Built Inventory Management page with Add/Edit forms
+3. ✅ Created Receive Stock form with full backend integration
+4. ✅ Implemented Kit Organization view with tree structure
+5. ✅ Added comprehensive search and filtering
+6. ✅ Implemented CSV export functionality
+7. ✅ Added batch tracking with lot numbers
+8. ✅ Implemented min/max stock thresholds
+9. ✅ Created Expiry Report with date range filtering
 
-### Sprint 2 Progress
+### Sprint 2 Completed Tasks
 - [x] Set up React Router with navigation menu
 - [x] Create Inventory list with sortable table
 - [x] Build Add/Edit Medicine forms with validation
@@ -101,6 +105,46 @@
 - [x] Implemented CSV export for inventory
 - [x] Added batch tracking with lot numbers
 - [x] Implemented min/max stock thresholds
+
+## 🚀 Current Sprint: Sprint 3 (Critical Improvements) - IN PROGRESS
+
+### Sprint 3 Goals (1-2 weeks)
+1. ✅ Implement comprehensive error handling and user feedback
+2. ⬜ Enhanced form validation across all forms
+3. ⬜ Extract custom hooks for reusable logic
+4. ⬜ Add loading states and skeleton screens
+5. ⬜ Implement backup/restore functionality
+
+### Sprint 3 Completed Tasks
+- [x] Create Toast notification component
+- [x] Create Toast context and provider
+- [x] Add ErrorBoundary for React errors
+- [x] Create error handling utilities
+- [x] Integrate Toast notifications in InventoryPage
+- [x] Integrate Toast notifications in StockOperationsPage
+- [x] Update App.tsx with providers
+- [x] Add error messages for database operations
+- [x] Implement comprehensive backup/restore system
+- [x] Create critical data export (medicines + expiration)
+- [x] Add full database export functionality
+- [x] Implement import with validation
+- [x] Add Backup button to Navigation menu
+
+### Sprint 3 Remaining Tasks
+- [ ] Implement validation utilities
+- [ ] Create useMedicines custom hook
+- [ ] Create useDatabase custom hook
+- [ ] Build skeleton components
+
+## 📅 Upcoming Sprint: Sprint 4 (Core Enhancements)
+
+### Sprint 4 Planned Features
+1. Stock Movement/Transfer functionality
+2. State management with Zustand
+3. Unit testing setup with Vitest
+4. CD Register for controlled drugs
+5. Kit Checklist for printable sheets
+6. PWA capabilities
 
 ## 🛠️ Technical Stack
 
@@ -125,7 +169,7 @@
 ## 📁 Current Project Structure
 
 ```
-mrt-meds/
+dfmrt-medicine-tracker/
 ├── src/
 │   ├── components/
 │   │   ├── dashboard/
@@ -208,7 +252,39 @@ mrt-meds/
 
 ## 📝 Recent Changes
 
-### 2025-08-29 (Latest - v0.1.17)
+### 2025-08-30 (Latest - v0.1.20)
+- ✅ **Backup & Restore System**
+  - Created comprehensive database export service
+  - Implemented critical data export (medicines, batches, expiration dates)
+  - Added full database export with all entities
+  - Built import functionality with validation
+  - Created user-friendly BackupRestore UI component
+  - Added Backup button to Navigation menu
+  - Focuses on disaster recovery for medicine inventory
+  - JSON format with metadata and validation
+  - Updated version to v0.1.19 with backup system
+
+### 2025-08-30 (v0.1.20)
+- ✅ **Platform Rebranding**
+  - Updated platform title to "DFMRT Medicine Tracker"
+  - Changed all references from "MRT Meds Tracker" to "DFMRT Medicine Tracker"
+  - Updated HTML document title and navigation header
+  - Updated dashboard title and all documentation
+  - Updated backup service and filename references
+  - Updated package.json name to dfmrt-medicine-tracker
+  - Maintained database compatibility for existing users
+
+### 2025-08-30 (v0.1.18)
+- ✅ **Error Handling & User Feedback**
+  - Created Toast notification component with animations
+  - Implemented ToastContext and provider for global notifications
+  - Added ErrorBoundary component for React error catching
+  - Created comprehensive error handling utilities
+  - Integrated toast notifications across all forms and pages
+  - Added user-friendly error messages for all database operations
+  - Success/error/warning/info toast types implemented
+
+### 2025-08-29 (v0.1.17)
 - ✅ **UI/UX Improvements**
   - Updated version number to v0.1.17 in Navigation component
   - Fixed duplicate text display on Kits page for base location
@@ -283,22 +359,19 @@ npm run preview
 ### Reset Database
 Click "Reset Data" button in the navigation bar (will clear and reseed)
 
-## 📅 Upcoming Milestones
+## 📅 Development Roadmap
 
-### Week 1 (Sprint 2)
-- Navigation and routing
-- Inventory management page
-- Basic CRUD operations
+### ✅ Completed Sprints
+- **Sprint 1**: Foundation (Database, Dashboard, Core UI)
+- **Sprint 2**: Core Features (Inventory, Stock Ops, Kits, Search)
 
-### Week 2 (Sprint 3)
-- Stock operations forms
-- Kit organization
-- Search functionality
+### 🟦 Current Sprint
+- **Sprint 3**: Critical Improvements (Error Handling, Validation, UX)
 
-### Week 3 (Sprint 4)
-- Reports and exports
-- Advanced filtering
-- Print layouts
+### 📋 Planned Sprints
+- **Sprint 4**: Core Enhancements (State Management, Testing, Stock Transfer)
+- **Sprint 5**: Advanced Features (PWA, Offline, Analytics)
+- **Sprint 6**: Polish & Deployment (Performance, Documentation, CI/CD)
 
 ## 🔧 Recent File Changes (v0.1.17)
 

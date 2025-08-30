@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -6,14 +7,18 @@ import {
   Briefcase, 
   FileText,
   Database,
-  RefreshCw
+  RefreshCw,
+  HardDrive
 } from 'lucide-react';
+import { BackupRestore } from '../BackupRestore';
 
 interface NavigationProps {
   onReseed: () => void;
 }
 
 export function Navigation({ onReseed }: NavigationProps) {
+  const [showBackup, setShowBackup] = useState(false);
+  
   const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/inventory', label: 'Inventory', icon: Package },
@@ -28,12 +33,20 @@ export function Navigation({ onReseed }: NavigationProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Database className="w-8 h-8 text-primary-500 mr-3" />
-            <h1 className="text-xl font-semibold text-gray-900">MRT Meds Tracker</h1>
+            <h1 className="text-xl font-semibold text-gray-900">DFMRT Medicine Tracker</h1>
             <span className="ml-3 px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded-full">
-              v0.1.17
+              v0.1.20
             </span>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowBackup(true)}
+              className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              title="Backup and restore database"
+            >
+              <HardDrive className="w-4 h-4 mr-1" />
+              Backup
+            </button>
             <button
               onClick={onReseed}
               className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
@@ -69,6 +82,11 @@ export function Navigation({ onReseed }: NavigationProps) {
           })}
         </div>
       </div>
+      
+      <BackupRestore 
+        isOpen={showBackup} 
+        onClose={() => setShowBackup(false)} 
+      />
     </nav>
   );
 }

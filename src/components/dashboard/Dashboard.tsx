@@ -101,7 +101,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">MRT Meds Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">DFMRT Medicine Dashboard</h1>
         <p className="text-gray-600 mt-2">Quick overview of your medical inventory</p>
       </div>
 
