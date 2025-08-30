@@ -14,7 +14,7 @@ interface MedicineWithStock extends Medicine {
   nearestExpiry?: Date;
 }
 
-type SortField = 'name' | 'category' | 'currentStock' | 'nearestExpiry' | 'form';
+type SortField = 'name' | 'category' | 'currentStock' | 'nearestExpiry' | 'form' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 export function InventoryPage() {
@@ -265,6 +265,10 @@ export function InventoryPage() {
           aVal = a.form.toLowerCase();
           bVal = b.form.toLowerCase();
           break;
+        case 'status':
+          aVal = getOverallStatus(a).toLowerCase();
+          bVal = getOverallStatus(b).toLowerCase();
+          break;
       }
 
       if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
@@ -335,6 +339,7 @@ export function InventoryPage() {
       case 'currentStock': return 'Stock';
       case 'nearestExpiry': return 'Expiration';
       case 'form': return 'Form';
+      case 'status': return 'Status';
       default: return field;
     }
   };
@@ -461,9 +466,7 @@ export function InventoryPage() {
                 <SortableHeader field="category">Category</SortableHeader>
                 <SortableHeader field="currentStock">Current Stock</SortableHeader>
                 <SortableHeader field="nearestExpiry">Expiration</SortableHeader>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                <SortableHeader field="status">Status</SortableHeader>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
