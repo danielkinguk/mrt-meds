@@ -9,6 +9,7 @@ import { Navigation } from './components/layout/Navigation';
 import { initializeDatabase, db } from './services/db/database';
 import { seedDatabase } from './services/db/seedData';
 import { Database } from 'lucide-react';
+import { DebugInfo } from './components/DebugInfo';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -24,21 +25,40 @@ function App() {
       setIsLoading(true);
       setError(null);
       
+      console.log('Starting app initialization...');
+      
       // Initialize database
       await initializeDatabase();
       
       // Check if we have data
       const medicineCount = await db.medicines.count();
+      console.log(`Found ${medicineCount} medicines in database`);
       
       // If no medicines, seed the database
       if (medicineCount === 0) {
         console.log('No medicines found, seeding database...');
         await seedDatabase();
+        
+        // Verify seeding worked
+        const newCount = await db.medicines.count();
+        console.log(`After seeding: ${newCount} medicines found`);
       }
       
       setIsInitialized(true);
+      console.log('App initialization completed successfully');
     } catch (err) {
       console.error('Failed to initialize app:', err);
+      
+      // Log additional debugging information
+      console.log('Environment info:', {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        cookieEnabled: navigator.cookieEnabled,
+        onLine: navigator.onLine,
+        indexedDB: !!window.indexedDB,
+        localStorage: !!window.localStorage
+      });
+      
       setError(err instanceof Error ? err.message : 'Failed to initialize application');
     } finally {
       setIsLoading(false);
@@ -115,6 +135,8 @@ function App() {
             <Route path="/reports" element={<ReportsPage />} />
           </Routes>
         </main>
+        
+        <DebugInfo />
       </div>
     </Router>
   );
