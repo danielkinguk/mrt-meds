@@ -112,7 +112,7 @@ export function InventoryPage() {
         med.category,
         med.currentStock?.toString() || '0',
         med.minStock.toString(),
-        getStockStatus(med.currentStock || 0, med.minStock),
+        getOverallStatus(med),
         med.nearestExpiry ? new Date(med.nearestExpiry).toLocaleDateString() : 'N/A'
       ])
     ].map(row => row.map(cell => 
@@ -130,7 +130,16 @@ export function InventoryPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  const getStockStatus = (current: number, min: number) => {
+  const getOverallStatus = (medicine: MedicineWithStock) => {
+    // First check if any items are expired
+    if (medicine.nearestExpiry && new Date(medicine.nearestExpiry) < new Date()) {
+      return 'Expired';
+    }
+    
+    // Then check stock levels
+    const current = medicine.currentStock || 0;
+    const min = medicine.minStock;
+    
     if (current === 0) return 'Out of Stock';
     if (current < min) return 'Low Stock';
     if (current < min * 1.5) return 'Warning';
@@ -193,10 +202,11 @@ export function InventoryPage() {
       med.category === categoryFilter;
     
     // Stock filter
-    const stockStatus = getStockStatus(med.currentStock || 0, med.minStock);
+    const stockStatus = getOverallStatus(med);
     const matchesStock = stockFilter === 'all' ||
       (stockFilter === 'out' && stockStatus === 'Out of Stock') ||
       (stockFilter === 'low' && stockStatus === 'Low Stock') ||
+      (stockFilter === 'expired' && stockStatus === 'Expired') ||
       (stockFilter === 'good' && stockStatus === 'Good');
     
     return matchesSearch && matchesCategory && matchesStock;
@@ -206,6 +216,7 @@ export function InventoryPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'Expired': return 'text-red-800 bg-red-100';
       case 'Out of Stock': return 'text-red-600 bg-red-50';
       case 'Low Stock': return 'text-orange-600 bg-orange-50';
       case 'Warning': return 'text-yellow-600 bg-yellow-50';
@@ -339,6 +350,7 @@ export function InventoryPage() {
                   className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="all">All Stock Levels</option>
+                  <option value="expired">Expired</option>
                   <option value="out">Out of Stock</option>
                   <option value="low">Low Stock</option>
                   <option value="good">Good Stock</option>
@@ -376,7 +388,7 @@ export function InventoryPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedAndFilteredMedicines.map((medicine) => {
-                const status = getStockStatus(medicine.currentStock || 0, medicine.minStock);
+                const status = getOverallStatus(medicine);
                 const statusColor = getStatusColor(status);
                 
                 return (
