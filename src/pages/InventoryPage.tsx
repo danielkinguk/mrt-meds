@@ -130,6 +130,13 @@ export function InventoryPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  const getStockStatus = (current: number, min: number) => {
+    if (current === 0) return 'Out of Stock';
+    if (current < min) return 'Low Stock';
+    if (current < min * 1.5) return 'Warning';
+    return 'Good';
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -196,13 +203,6 @@ export function InventoryPage() {
   });
 
   const sortedAndFilteredMedicines = sortMedicines(filteredMedicines);
-
-  const getStockStatus = (current: number, min: number) => {
-    if (current === 0) return 'Out of Stock';
-    if (current < min) return 'Low Stock';
-    if (current < min * 1.5) return 'Warning';
-    return 'Good';
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
