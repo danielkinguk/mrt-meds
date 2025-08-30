@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      "74kyvr-5173.csb.app", // your sandbox domain
+      "sjwf24-5173.csb.app", // your sandbox domain
     ],
   },
 });
