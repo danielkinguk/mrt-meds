@@ -7,7 +7,8 @@ import {
   TrendingDown,
   Plus,
   FileText,
-  CheckSquare
+  CheckSquare,
+  List
 } from 'lucide-react';
 import { DashboardTile } from './DashboardTile';
 import { db } from '../../services/db/database';
@@ -160,7 +161,15 @@ export const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <button 
+            onClick={() => navigate('/inventory')}
+            className="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <List className="mr-2" size={20} />
+            <span className="font-medium">Inventory View</span>
+          </button>
+          
           <button 
             onClick={() => navigate('/stock-operations')}
             className="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
