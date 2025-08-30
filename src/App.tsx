@@ -25,6 +25,7 @@ function App() {
       setIsLoading(true);
       setError(null);
       
+
       console.log('Starting app initialization...');
       
       // Initialize database
