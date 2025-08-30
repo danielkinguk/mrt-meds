@@ -28,7 +28,7 @@
 | Stock Movement | ⬜ Not Started | P1 | 3 | Transfer between locations |
 | Disposal/Write-off | ⬜ Not Started | P2 | 3 | Expired, damaged, lost |
 | **Expiry Management** | | | | |
-| Color Coding | ✅ Complete | P0 | 1 | Implemented in dashboard tiles |
+| Color Coding | ✅ Complete | P0 | 1 | Implemented in dashboard tiCode review and les |
 | Expiry Alerts | ✅ Complete | P0 | 1 | Dashboard alert section |
 | Expiry Report | ✅ Complete | P1 | 2 | Filterable by date range |
 | **Reports & Export** | | | | |
