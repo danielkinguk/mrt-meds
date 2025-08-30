@@ -169,7 +169,10 @@ export const Dashboard: React.FC = () => {
             <span className="font-medium">Receive Stock</span>
           </button>
           
-          <button className="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => navigate('/kits')}
+            className="flex items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <CheckSquare className="mr-2" size={20} />
             <span className="font-medium">Kit Check</span>
           </button>

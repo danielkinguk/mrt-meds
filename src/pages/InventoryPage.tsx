@@ -23,6 +23,9 @@ export function InventoryPage() {
   const [editingMedicine, setEditingMedicine] = useState<Medicine | undefined>();
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [showFilters, setShowFilters] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [stockFilter, setStockFilter] = useState<string>('all');
 
   useEffect(() => {
     loadMedicines();
@@ -98,6 +101,35 @@ export function InventoryPage() {
     setEditingMedicine(undefined);
   };
 
+  const handleExportCSV = () => {
+    const csvContent = [
+      ['Name', 'Generic Name', 'Strength', 'Form', 'Category', 'Current Stock', 'Min Stock', 'Status', 'Nearest Expiry'],
+      ...sortedAndFilteredMedicines.map(med => [
+        med.name,
+        med.genericName || '',
+        med.strength,
+        med.form,
+        med.category,
+        med.currentStock?.toString() || '0',
+        med.minStock.toString(),
+        getStockStatus(med.currentStock || 0, med.minStock),
+        med.nearestExpiry ? new Date(med.nearestExpiry).toLocaleDateString() : 'N/A'
+      ])
+    ].map(row => row.map(cell => 
+      cell.includes(',') ? `"${cell}"` : cell
+    ).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inventory_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -142,10 +174,26 @@ export function InventoryPage() {
     });
   };
 
-  const filteredMedicines = medicines.filter(med =>
-    med.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    med.genericName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMedicines = medicines.filter(med => {
+    // Search filter
+    const matchesSearch = med.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      med.genericName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Category filter
+    const matchesCategory = categoryFilter === 'all' || 
+      (categoryFilter === 'controlled' && med.isControlled) ||
+      (categoryFilter === 'regular' && !med.isControlled) ||
+      med.category === categoryFilter;
+    
+    // Stock filter
+    const stockStatus = getStockStatus(med.currentStock || 0, med.minStock);
+    const matchesStock = stockFilter === 'all' ||
+      (stockFilter === 'out' && stockStatus === 'Out of Stock') ||
+      (stockFilter === 'low' && stockStatus === 'Low Stock') ||
+      (stockFilter === 'good' && stockStatus === 'Good');
+    
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   const sortedAndFilteredMedicines = sortMedicines(filteredMedicines);
 
@@ -228,9 +276,12 @@ export function InventoryPage() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Medicine
               </button>
-              <button className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleExportCSV}
+                className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                Export CSV
               </button>
             </div>
           </div>
@@ -248,12 +299,63 @@ export function InventoryPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
-            <button className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg transition-colors ${
+                showFilters ? 'bg-primary-50 border-primary-500 text-primary-700' : 'hover:bg-white'
+              }`}
+            >
               <Filter className="w-4 h-4 mr-2" />
-              Filters
+              Filters {(categoryFilter !== 'all' || stockFilter !== 'all') && '•'}
             </button>
           </div>
         </div>
+
+        {showFilters && (
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center space-x-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="controlled">Controlled Drugs</option>
+                  <option value="regular">Regular Medicines</option>
+                  <option value="analgesic">Analgesic</option>
+                  <option value="antibiotic">Antibiotic</option>
+                  <option value="cardiac">Cardiac</option>
+                  <option value="respiratory">Respiratory</option>
+                  <option value="emergency">Emergency</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Stock Status</label>
+                <select
+                  value={stockFilter}
+                  onChange={(e) => setStockFilter(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="all">All Stock Levels</option>
+                  <option value="out">Out of Stock</option>
+                  <option value="low">Low Stock</option>
+                  <option value="good">Good Stock</option>
+                </select>
+              </div>
+              <button
+                onClick={() => {
+                  setCategoryFilter('all');
+                  setStockFilter('all');
+                }}
+                className="mt-5 px-3 py-1 text-sm text-primary-600 hover:text-primary-700"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

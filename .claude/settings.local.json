@@ -12,7 +12,8 @@
       "Bash(npm run dev:*)",
       "Bash(ss:*)",
       "Bash(lsof:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
