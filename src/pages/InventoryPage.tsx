@@ -1,26 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Package, Plus, Search, Filter, Download, Edit, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Medicine } from '../types';
-import { db } from '../services/db/database';
 import { MedicineForm } from '../components/forms/MedicineForm';
 import { useToast } from '../contexts/ToastContext';
-import { getErrorMessage, logError } from '../utils/errorHandler';
-
-interface MedicineWithStock extends Medicine {
-  currentStock?: number;
-  batchCount?: number;
-  genericName?: string;
-  unit?: string;
-  nearestExpiry?: Date;
-}
+import { useMedicines, useExpiry } from '../hooks';
+import type { MedicineWithStock } from '../hooks';
 
 type SortField = 'name' | 'category' | 'currentStock' | 'nearestExpiry' | 'form' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 export function InventoryPage() {
-  const [medicines, setMedicines] = useState<MedicineWithStock[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
   const [showMedicineForm, setShowMedicineForm] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | undefined>();
   const [sortField, setSortField] = useState<SortField>('name');
@@ -29,46 +19,12 @@ export function InventoryPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<string>('all');
   const [deletingMedicine, setDeletingMedicine] = useState<Medicine | null>(null);
-  const { showSuccess, showError, showInfo } = useToast();
+  const { showSuccess } = useToast();
+  
+  // Use custom hooks
+  const { medicines, loading, addMedicine, updateMedicine, deleteMedicine, getOverallStatus } = useMedicines();
+  const { getStatusColor } = useExpiry();
 
-  useEffect(() => {
-    loadMedicines();
-  }, []);
-
-  const loadMedicines = async () => {
-    try {
-      setLoading(true);
-      const meds = await db.medicines.toArray();
-      
-      const medsWithStock = await Promise.all(meds.map(async (med) => {
-        const batches = await db.batches.where('medicineId').equals(med.id!).toArray();
-        
-        const totalQuantity = batches.reduce((sum, batch) => sum + batch.quantity, 0);
-        
-        // Find the nearest expiry date
-        const nearestExpiry = batches.length > 0 
-          ? batches.reduce((nearest, batch) => 
-              batch.expiryDate < nearest ? batch.expiryDate : nearest
-            , batches[0].expiryDate)
-          : undefined;
-        
-        return {
-          ...med,
-          currentStock: totalQuantity,
-          batchCount: batches.length,
-          unit: 'units',
-          nearestExpiry
-        };
-      }));
-      
-      setMedicines(medsWithStock);
-    } catch (error) {
-      logError(error, 'loadMedicines');
-      showError('Failed to load medicines', getErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddMedicine = () => {
     setEditingMedicine(undefined);
@@ -84,37 +40,16 @@ export function InventoryPage() {
     try {
       if ('id' in medicineData) {
         // Update existing medicine
-        await db.medicines.update(medicineData.id, medicineData);
-        
-        // If expiration date was provided, update all batches for this medicine
-        if (medicineData.expirationDate) {
-          const batches = await db.batches.where('medicineId').equals(medicineData.id).toArray();
-          const newExpiryDate = new Date(medicineData.expirationDate);
-          
-          // Update each batch with the new expiration date
-          await Promise.all(
-            batches.map(batch => 
-              db.batches.update(batch.id, { expiryDate: newExpiryDate })
-            )
-          );
-          
-          showInfo(`Updated ${batches.length} batch(es) with new expiration date`);
-        }
-        showSuccess('Medicine updated successfully', `${medicineData.name} has been updated`);
+        await updateMedicine(medicineData);
       } else {
         // Add new medicine
-        const newId = `med-${Date.now()}`;
-        await db.medicines.add({ ...medicineData, id: newId });
-        showSuccess('Medicine added successfully', `${medicineData.name} has been added to inventory`);
+        await addMedicine(medicineData);
       }
       
-      // Reload medicines to show changes
-      await loadMedicines();
       setShowMedicineForm(false);
       setEditingMedicine(undefined);
     } catch (error) {
-      logError(error, 'handleSaveMedicine');
-      showError('Failed to save medicine', getErrorMessage(error));
+      // Error handling is done in the hook
     }
   };
 
@@ -131,40 +66,10 @@ export function InventoryPage() {
     if (!deletingMedicine) return;
 
     try {
-      // Get all related data
-      const batches = await db.batches.where('medicineId').equals(deletingMedicine.id!).toArray();
-      const items = await db.items.where('medicineId').equals(deletingMedicine.id!).toArray();
-      const movements = await db.movements.where('medicineId').equals(deletingMedicine.id!).toArray();
-
-      // Delete in correct order: movements -> items -> batches -> medicine
-      if (movements.length > 0) {
-        await db.movements.where('medicineId').equals(deletingMedicine.id!).delete();
-      }
-      
-      if (items.length > 0) {
-        await db.items.where('medicineId').equals(deletingMedicine.id!).delete();
-      }
-      
-      if (batches.length > 0) {
-        await db.batches.where('medicineId').equals(deletingMedicine.id!).delete();
-      }
-      
-      // Finally delete the medicine
-      await db.medicines.delete(deletingMedicine.id!);
-
-      // Show success message with details
-      const deletedCount = batches.length + items.length;
-      showSuccess(
-        'Medicine deleted successfully', 
-        `${deletingMedicine.name} and ${deletedCount} related records removed`
-      );
-      
-      // Reload medicines to refresh the list
-      await loadMedicines();
+      await deleteMedicine(deletingMedicine.id!);
       setDeletingMedicine(null);
     } catch (error) {
-      logError(error, 'confirmDeleteMedicine');
-      showError('Failed to delete medicine', getErrorMessage(error));
+      // Error handling is done in the hook
     }
   };
 
@@ -202,32 +107,10 @@ export function InventoryPage() {
     window.URL.revokeObjectURL(url);
     showSuccess('Export successful', 'Inventory data has been exported to CSV');
     } catch (error) {
-      logError(error, 'handleExportCSV');
-      showError('Export failed', 'Failed to export inventory data');
+      console.error('Export failed:', error);
     }
   };
 
-  const getOverallStatus = (medicine: MedicineWithStock) => {
-    const now = new Date();
-    
-    // Check both batch expiry and medicine's own expiration date
-    const batchExpired = medicine.nearestExpiry && new Date(medicine.nearestExpiry) < now;
-    const medicineExpired = medicine.expirationDate && new Date(medicine.expirationDate) < now;
-    
-    // If either the batch or the medicine itself is expired
-    if (batchExpired || medicineExpired) {
-      return 'Expired';
-    }
-    
-    // Then check stock levels
-    const current = medicine.currentStock || 0;
-    const min = medicine.minStock;
-    
-    if (current === 0) return 'Out of Stock';
-    if (current < min) return 'Low Stock';
-    if (current < min * 1.5) return 'Warning';
-    return 'Good';
-  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -301,15 +184,6 @@ export function InventoryPage() {
 
   const sortedAndFilteredMedicines = sortMedicines(filteredMedicines);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Expired': return 'text-red-800 bg-red-100';
-      case 'Out of Stock': return 'text-red-600 bg-red-50';
-      case 'Low Stock': return 'text-orange-600 bg-orange-50';
-      case 'Warning': return 'text-yellow-600 bg-yellow-50';
-      default: return 'text-green-600 bg-green-50';
-    }
-  };
 
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
     const isActive = sortField === field;

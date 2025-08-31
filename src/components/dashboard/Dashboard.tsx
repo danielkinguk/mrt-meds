@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   AlertCircle, 
@@ -11,85 +11,19 @@ import {
   List
 } from 'lucide-react';
 import { DashboardTile } from './DashboardTile';
-import { db } from '../../services/db/database';
-import { getExpiringMedicines, getStockLevels } from '../../services/db/medicines';
-
-interface DashboardStats {
-  totalMedicines: number;
-  totalItems: number;
-  expiringCount: number;
-  expiredCount: number;
-  lowStockCount: number;
-  criticalStockCount: number;
-  locationsCount: number;
-  recentMovements: number;
-}
+import { useDatabase, useExpiry } from '../../hooks';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalMedicines: 0,
-    totalItems: 0,
-    expiringCount: 0,
-    expiredCount: 0,
-    lowStockCount: 0,
-    criticalStockCount: 0,
-    locationsCount: 0,
-    recentMovements: 0
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Get basic counts
-      const medicines = await db.medicines.count();
-      // Calculate total stock from batches instead of individual items
-      const batches = await db.batches.toArray();
-      const totalStock = batches.reduce((sum, batch) => sum + batch.quantity, 0);
-      const locations = await db.locations.count();
-      
-      // Get expiring medicines
-      const expiringMeds = await getExpiringMedicines(60);
-      const expired = expiringMeds.filter(m => m.expiryStatus.status === 'expired').length;
-      const expiring = expiringMeds.filter(m => 
-        m.expiryStatus.status === 'critical' || m.expiryStatus.status === 'warning'
-      ).length;
-      
-      // Get stock levels
-      const stockLevels = await getStockLevels();
-      const lowStock = stockLevels.filter(s => s.status === 'low').length;
-      const criticalStock = stockLevels.filter(s => s.status === 'critical').length;
-      
-      // Get recent movements (last 7 days)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const recentMovements = await db.movements
-        .where('timestamp')
-        .above(weekAgo)
-        .count();
-      
-      setStats({
-        totalMedicines: medicines,
-        totalItems: totalStock,
-        expiringCount: expiring,
-        expiredCount: expired,
-        lowStockCount: lowStock,
-        criticalStockCount: criticalStock,
-        locationsCount: locations,
-        recentMovements
-      });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  // Use custom hooks
+  const { stats, loading } = useDatabase();
+  const { expiredCount, expiringCount, lowStockCount, criticalStockCount } = useExpiry();
+  
+  // Default values if stats is null
+  const totalMedicines = stats?.totalMedicines || 0;
+  const totalItems = stats?.totalItems || 0;
+  const recentMovements = stats?.totalMovements || 0;
 
   if (loading) {
     return (
@@ -107,16 +41,16 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Alert Section */}
-      {(stats.expiredCount > 0 || stats.criticalStockCount > 0) && (
+      {(expiredCount > 0 || criticalStockCount > 0) && (
         <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
           <div className="flex items-center">
             <AlertCircle className="text-red-600 mr-3" size={24} />
             <div>
               <p className="font-semibold text-red-900">Immediate Attention Required</p>
               <p className="text-red-700 text-sm mt-1">
-                {stats.expiredCount > 0 && `${stats.expiredCount} expired items`}
-                {stats.expiredCount > 0 && stats.criticalStockCount > 0 && ' • '}
-                {stats.criticalStockCount > 0 && `${stats.criticalStockCount} medicines critically low`}
+                {expiredCount > 0 && `${expiredCount} expired items`}
+                {expiredCount > 0 && criticalStockCount > 0 && ' • '}
+                {criticalStockCount > 0 && `${criticalStockCount} medicines critically low`}
               </p>
             </div>
           </div>
@@ -127,7 +61,7 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <DashboardTile
           title="Total Medicines"
-          value={stats.totalMedicines}
+          value={totalMedicines}
           subtitle="Types in formulary"
           icon={Package}
           color="primary"
@@ -135,7 +69,7 @@ export const Dashboard: React.FC = () => {
         
         <DashboardTile
           title="Available Items"
-          value={stats.totalItems}
+          value={totalItems}
           subtitle="In stock across all locations"
           icon={Package}
           color="success"
@@ -143,18 +77,18 @@ export const Dashboard: React.FC = () => {
         
         <DashboardTile
           title="Expiring Soon"
-          value={stats.expiringCount}
-          subtitle={stats.expiredCount > 0 ? `+ ${stats.expiredCount} expired` : "Within 60 days"}
+          value={expiringCount}
+          subtitle={expiredCount > 0 ? `+ ${expiredCount} expired` : "Within 60 days"}
           icon={Clock}
-          color={stats.expiredCount > 0 ? "danger" : "warning"}
+          color={expiredCount > 0 ? "danger" : "warning"}
         />
         
         <DashboardTile
           title="Low Stock"
-          value={stats.lowStockCount}
-          subtitle={stats.criticalStockCount > 0 ? `${stats.criticalStockCount} critical` : "Below minimum"}
+          value={lowStockCount}
+          subtitle={criticalStockCount > 0 ? `${criticalStockCount} critical` : "Below minimum"}
           icon={TrendingDown}
-          color={stats.criticalStockCount > 0 ? "danger" : "warning"}
+          color={criticalStockCount > 0 ? "danger" : "warning"}
         />
       </div>
 
@@ -201,8 +135,8 @@ export const Dashboard: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
         <div className="bg-white border-2 border-gray-200 rounded-lg p-6">
           <p className="text-gray-600">
-            {stats.recentMovements > 0 
-              ? `${stats.recentMovements} stock movements in the last 7 days`
+            {recentMovements > 0 
+              ? `${recentMovements} stock movements in the last 7 days`
               : 'No recent stock movements'
             }
           </p>
