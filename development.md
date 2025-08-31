@@ -122,7 +122,7 @@
 2. ✅ Implement multi-session connection management
 3. ✅ Add concurrency protection and operation locking
 4. ⬜ Enhanced form validation across all forms
-5. ⬜ Extract custom hooks for reusable logic
+5. ✅ Extract custom hooks for reusable logic
 6. ⬜ Add loading states and skeleton screens
 7. ✅ Implement backup/restore functionality
 
@@ -147,11 +147,13 @@
 - [x] Add SafeDatabaseOperations for protected operations
 - [x] Update all database operations to use connection management
 - [x] Add connection monitoring and status display
+- [x] Create useMedicines custom hook with full CRUD operations
+- [x] Create useDatabase custom hook for connection management
+- [x] Create useExpiry custom hook for expiry tracking
+- [x] Implement custom hooks architecture with TypeScript interfaces
 
 ### Sprint 3 Remaining Tasks
 - [ ] Implement validation utilities
-- [ ] Create useMedicines custom hook
-- [ ] Create useDatabase custom hook
 - [ ] Build skeleton components
 
 ## 📅 Upcoming Sprint: Sprint 4 (Core Enhancements)
@@ -197,6 +199,11 @@ dfmrt-medicine-tracker/
 │   │   ├── inventory/
 │   │   └── layout/
 │   │       └── Navigation.tsx     # Main navigation menu
+│   ├── hooks/                     # Custom React hooks
+│   │   ├── useMedicines.ts        # Medicine management hook
+│   │   ├── useDatabase.ts         # Database operations hook
+│   │   ├── useExpiry.ts           # Expiry tracking hook
+│   │   └── index.ts               # Hook exports
 │   ├── services/
 │   │   └── db/
 │   │       ├── database.ts        # Dexie configuration
@@ -270,7 +277,18 @@ dfmrt-medicine-tracker/
 
 ## 📝 Recent Changes
 
-### 2025-08-30 (Latest - v0.1.20)
+### 2025-08-31 (Latest - v0.2.1)
+- ✅ **Custom Hooks Architecture**
+  - Created useMedicines hook for comprehensive medicine management
+  - Implemented useDatabase hook for connection and statistics management
+  - Built useExpiry hook for expiry tracking and stock level monitoring
+  - Added TypeScript interfaces for hook return types and data structures
+  - Implemented error handling and Toast integration in all hooks
+  - Created centralized hooks export module (src/hooks/index.ts)
+  - Enhanced code reusability and maintainability across components
+  - Completed Sprint 3 goal: "Extract custom hooks for reusable logic"
+
+### 2025-08-30 (v0.1.20)
 - ✅ **Backup & Restore System**
   - Created comprehensive database export service
   - Implemented critical data export (medicines, batches, expiration dates)
@@ -416,9 +434,10 @@ Click "Reset Data" button in the navigation bar (will clear and reseed)
 
 ---
 
-Last Updated: 2025-08-29 17:30
-Sprint: 2 (Core Features) - IN PROGRESS
-Version: 0.1.17
+Last Updated: 2025-08-31 12:00
+Sprint: 3 (Critical Improvements) - NEAR COMPLETION
+Version: 0.2.1
 Build Status: ✅ Successful
 Application Status: 🟢 Running
 Server: http://localhost:5173/ (with --host flag)
+Recent Achievement: ✅ Custom hooks architecture completed

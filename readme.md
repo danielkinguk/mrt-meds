@@ -55,6 +55,7 @@ npm run preview
 - **Build Tool**: Vite 5.4.10
 - **Styling**: TailwindCSS 3.4.17
 - **Database**: IndexedDB (via Dexie.js 4.2.0) with Connection Management
+- **Custom Hooks**: Reusable logic for medicines, database, and expiry management
 - **Routing**: React Router DOM 6.30.1
 - **Icons**: Lucide React 0.542.0
 - **Concurrency**: Multi-session support with operation locking
@@ -74,6 +75,7 @@ npm run preview
 - **Concurrent operation protection**
 - **Connection monitoring and status display**
 - **Session-based data isolation**
+- **Custom hooks for reusable logic**
 
 ### 🟦 In Progress
 - Enhanced error handling for different environments
@@ -153,10 +155,25 @@ const stats = ConnectionManager.getInstance().getConnectionStats();
 
 ## 🔧 Development
 
+### Hooks Architecture
+
+The application uses custom React hooks for managing complex state and business logic:
+
+- **`useMedicines`**: Complete medicine management with stock calculation, CRUD operations, and status determination
+- **`useDatabase`**: Database connection management, statistics, and reset functionality
+- **`useExpiry`**: Expiry tracking, status calculation, and stock level monitoring
+
+These hooks provide reusable logic across components and ensure consistent data management patterns.
+
 ### Project Structure
 ```
 src/
 ├── components/          # Reusable UI components
+├── hooks/              # Custom React hooks for business logic
+│   ├── useMedicines.ts # Medicine management hook
+│   ├── useDatabase.ts  # Database operations hook
+│   ├── useExpiry.ts    # Expiry tracking hook
+│   └── index.ts        # Hook exports
 ├── pages/              # Main application pages
 ├── services/           # Business logic and data access
 ├── types/              # TypeScript type definitions
@@ -214,8 +231,8 @@ For support or questions, please contact the development team or create an issue
 
 ---
 
-**Version**: 0.2.0  
-**Last Updated**: 2025-01-27  
+**Version**: 0.2.1  
+**Last Updated**: 2025-08-31  
 **Status**: Active Development  
 **Team**: Duddon and Furness Mountain Rescue Team  
-**New Features**: Multi-session support, concurrency protection, connection management
+**New Features**: Custom hooks architecture, reusable business logic, enhanced code organization
