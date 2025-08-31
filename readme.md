@@ -2,7 +2,7 @@
 
 A comprehensive medication and equipment management system for Mountain Rescue Teams, specifically designed for the Duddon and Furness Mountain Rescue Team.
 
-## 🏔️ Project Overview
+## 🏔️ Project Overview Full
 
 DFMRT Medicine Tracker is a web-based application that helps Mountain Rescue Teams manage their medical supplies, track expiry dates, monitor stock levels, and organize equipment across different response vehicles and kits. The system is built with modern web technologies and provides a user-friendly interface for managing critical medical resources.
 
