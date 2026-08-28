@@ -23,7 +23,6 @@ export const formulary = [
   { name: "Prochlorperazine", form: "Buccal tablet / injection", dose: "3–12.5 mg buccal/IM", use: "nausea/vertigo" },
   { name: "Salbutamol", form: "Inhaler / Nebuliser", dose: "100 mcg per puff or 2.5 mg neb", use: "bronchospasm" },
   { name: "Tranexamic Acid", form: "Injection (IV)", dose: "1 g IV", use: "trauma/bleeding" },
-  { name: "Viagra", form: "Tablet", dose: "1 g", use: "Date Night" },
 
   ];
 

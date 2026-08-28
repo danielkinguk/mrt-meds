@@ -47,9 +47,6 @@ const formulary = [
   { name: "I-gel (Yellow)", form: "Supraglottic airway", dose: "Size 3", use: "advanced airway" },
   { name: "I-gel (Green)", form: "Supraglottic airway", dose: "Size 4", use: "advanced airway" },
   { name: "I-gel (Orange)", form: "Supraglottic airway", dose: "Size 5", use: "advanced airway" },
-  
-  // Additional Medication
-  { name: "Viagra", form: "Tablet", dose: "50 mg PO", use: "pulmonary hypertension/altitude sickness" },
 ];
 
 // Helper function to parse form to structured data
